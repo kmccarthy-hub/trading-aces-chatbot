@@ -1,13 +1,21 @@
 # Trading Aces Help Centre
 
-This is a Vercel-ready chatbot webpage for Trading Aces. The chat endpoint reads live card inventory from the public Google Sheet, then uses Gemini to answer only questions about cards currently in stock.
+This is a chatbot webpage for Trading Aces. It works on GitHub Pages by reading live card inventory from the public Google Sheet in the browser. It can also use the Vercel API route with Gemini when deployed on Vercel.
 
 ## Files
 
 - `index.html` - webpage structure
 - `styles.css` - sports-themed styling
-- `script.js` - browser chat behaviour
-- `api/chat.js` - Vercel serverless chatbot endpoint
+- `script.js` - browser chat behaviour and GitHub Pages live-sheet assistant
+- `api/chat.js` - optional Vercel serverless Gemini endpoint
+
+## GitHub Pages
+
+Live site:
+
+```text
+https://kmccarthy-hub.github.io/trading-aces-chatbot/
+```
 
 ## Vercel environment variables
 
