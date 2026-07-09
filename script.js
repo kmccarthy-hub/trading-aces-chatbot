@@ -22,12 +22,73 @@ function addMessage(role, text, isLoading = false) {
 
   const bubble = document.createElement("div");
   bubble.className = "bubble";
-  bubble.textContent = text;
+  setBubbleContent(bubble, text, role);
 
   message.append(avatar, bubble);
   messages.appendChild(message);
   messages.scrollTop = messages.scrollHeight;
   return message;
+}
+
+function escapeHtml(text) {
+  return String(text)
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("'", "&#39;");
+}
+
+function formatInlineMarkdown(text) {
+  return escapeHtml(text).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+}
+
+function formatAssistantReply(text) {
+  const lines = String(text).split(/\r?\n/);
+  const html = [];
+  let inList = false;
+
+  lines.forEach((line) => {
+    const trimmed = line.trim();
+
+    if (!trimmed) {
+      if (inList) {
+        html.push("</ul>");
+        inList = false;
+      }
+      return;
+    }
+
+    const bulletMatch = trimmed.match(/^\*+\s+(.+)$/) || trimmed.match(/^-\s+(.+)$/);
+    if (bulletMatch) {
+      if (!inList) {
+        html.push("<ul>");
+        inList = true;
+      }
+      html.push(`<li>${formatInlineMarkdown(bulletMatch[1])}</li>`);
+      return;
+    }
+
+    if (inList) {
+      html.push("</ul>");
+      inList = false;
+    }
+    html.push(`<p>${formatInlineMarkdown(trimmed)}</p>`);
+  });
+
+  if (inList) {
+    html.push("</ul>");
+  }
+
+  return html.join("");
+}
+
+function setBubbleContent(bubble, text, role = "assistant") {
+  if (role === "assistant") {
+    bubble.innerHTML = formatAssistantReply(text);
+  } else {
+    bubble.textContent = text;
+  }
 }
 
 function setBusy(isBusy) {
@@ -253,11 +314,11 @@ async function sendMessage(text) {
   try {
     const reply = await askServerlessAi(message);
     loadingMessage.classList.remove("loading");
-    loadingBubble.textContent = reply;
+    setBubbleContent(loadingBubble, reply);
     setStatus("Gemini + live sheet");
   } catch (error) {
     loadingMessage.classList.remove("loading");
-    loadingBubble.textContent = `${error.message} Please check the Vercel Gemini deployment and try again.`;
+    setBubbleContent(loadingBubble, `${error.message} Please check the Vercel Gemini deployment and try again.`);
     setStatus("Gemini needs attention", true);
   } finally {
     setBusy(false);
