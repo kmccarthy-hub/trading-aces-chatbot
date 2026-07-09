@@ -177,6 +177,27 @@ h1 {
   white-space: pre-wrap;
 }
 
+.bubble p {
+  margin: 0 0 10px;
+}
+
+.bubble p:last-child {
+  margin-bottom: 0;
+}
+
+.bubble ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+
+.bubble li {
+  margin: 5px 0;
+}
+
+.bubble strong {
+  font-weight: 800;
+}
+
 .message.user .bubble {
   grid-column: 1;
   grid-row: 1;
