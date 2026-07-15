@@ -1,15 +1,15 @@
 :root {
-  --ink: #132238;
-  --muted: #637083;
-  --line: #dfe5ec;
-  --field: #f6f8fb;
+  --ink: #18342e;
+  --muted: #65766f;
+  --line: #dbe8e1;
+  --field: #f4faf6;
   --panel: #ffffff;
-  --green: #1f8a58;
-  --green-soft: #e8f6ef;
-  --red: #b3413b;
-  --blue: #2454a6;
-  --gold: #c9992e;
-  --shadow: 0 24px 70px rgba(19, 34, 56, 0.16);
+  --green: #2f8f61;
+  --green-soft: #eaf7ef;
+  --red: #b95a4d;
+  --blue: #2f6f7b;
+  --gold: #d6a947;
+  --shadow: 0 24px 70px rgba(24, 52, 46, 0.16);
 }
 
 * {
@@ -22,9 +22,9 @@ body {
   font-family: Arial, Helvetica, sans-serif;
   color: var(--ink);
   background:
-    linear-gradient(135deg, rgba(36, 84, 166, 0.12), rgba(31, 138, 88, 0.10)),
-    repeating-linear-gradient(90deg, rgba(19, 34, 56, 0.045) 0 1px, transparent 1px 92px),
-    #eef3f8;
+    linear-gradient(135deg, rgba(47, 143, 97, 0.13), rgba(47, 111, 123, 0.10)),
+    repeating-linear-gradient(90deg, rgba(24, 52, 46, 0.04) 0 1px, transparent 1px 92px),
+    #eef7f1;
 }
 
 .app-shell {
@@ -44,7 +44,7 @@ body {
   grid-template-rows: auto auto 1fr auto;
   overflow: hidden;
   background: var(--panel);
-  border: 1px solid rgba(19, 34, 56, 0.10);
+  border: 1px solid rgba(24, 52, 46, 0.10);
   border-radius: 8px;
   box-shadow: var(--shadow);
 }
@@ -57,13 +57,13 @@ body {
   padding: 24px;
   color: #fff;
   background:
-    linear-gradient(120deg, rgba(19, 34, 56, 0.96), rgba(36, 84, 166, 0.92)),
-    radial-gradient(circle at 82% 28%, rgba(201, 153, 46, 0.32), transparent 36%);
+    linear-gradient(120deg, rgba(24, 52, 46, 0.97), rgba(47, 111, 123, 0.92)),
+    radial-gradient(circle at 82% 28%, rgba(214, 169, 71, 0.28), transparent 36%);
 }
 
 .eyebrow {
   margin: 0 0 4px;
-  color: #d7e7ff;
+  color: #dff4e8;
   font-size: 0.78rem;
   font-weight: 700;
   letter-spacing: 0.08em;
@@ -114,7 +114,7 @@ h1 {
   flex: 0 0 auto;
   min-height: 38px;
   padding: 0 14px;
-  color: var(--blue);
+  color: var(--green);
   font: inherit;
   font-size: 0.92rem;
   border: 1px solid #cbd8ec;
@@ -124,8 +124,8 @@ h1 {
 }
 
 .suggestion:hover {
-  border-color: var(--blue);
-  background: #f3f7ff;
+  border-color: var(--green);
+  background: #f3fbf6;
 }
 
 .messages {
@@ -136,7 +136,7 @@ h1 {
   overflow-y: auto;
   background:
     linear-gradient(rgba(255, 255, 255, 0.90), rgba(255, 255, 255, 0.90)),
-    linear-gradient(90deg, transparent 49%, rgba(31, 138, 88, 0.10) 49% 51%, transparent 51%);
+    linear-gradient(90deg, transparent 49%, rgba(47, 143, 97, 0.10) 49% 51%, transparent 51%);
 }
 
 .message {
@@ -232,8 +232,8 @@ input {
 }
 
 input:focus {
-  outline: 3px solid rgba(36, 84, 166, 0.18);
-  border-color: var(--blue);
+  outline: 3px solid rgba(47, 143, 97, 0.18);
+  border-color: var(--green);
   background: #fff;
 }
 
@@ -246,7 +246,7 @@ button[type="submit"] {
   font-weight: 700;
   border: 0;
   border-radius: 8px;
-  background: var(--blue);
+  background: var(--green);
   cursor: pointer;
 }
 
