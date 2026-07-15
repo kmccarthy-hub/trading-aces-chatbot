@@ -2,7 +2,7 @@
 
 This is a GitHub Pages submission site for Meadow Vet Care. The visible webpage is hosted on GitHub Pages and calls a Vercel API route, which keeps the Gemini API key private.
 
-The AI assistant reads the live Meadow Vet Care Google Sheet, checks Irish public holidays from a live holiday API, checks live weather when a location is provided, and answers only from those data sources.
+The AI assistant reads the live Meadow Vet Care Google Sheet, derives appointment availability from listed service slots, checks Irish public holidays, checks live weather when a location is provided, and uses structured triage plus visit prep/aftercare guidance.
 
 ## Live URLs
 
@@ -57,6 +57,13 @@ https://api.open-meteo.com/v1/forecast
 ```
 
 Weather questions require a user location. The assistant checks current conditions and a forecast up to 3 days ahead.
+
+## Added Clinic Support Features
+
+- Appointment availability from `slots_this_week` and `availability` in the live services sheet.
+- Symptom urgency guidance with clear emergency escalation and no diagnosis.
+- Visit preparation and aftercare guidance by service category.
+- Compact webpage cards showing users what the assistant can help with.
 
 ## Vercel Environment Variables
 
