@@ -4,6 +4,12 @@ const SHEET_CSV_URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/t
 const GEMINI_MODEL = process.env.GEMINI_MODEL || "gemini-2.5-flash";
 const HOLIDAY_COUNTRY_CODE = "IE";
 const WEATHER_FORECAST_DAYS = 3;
+const KNOWN_IRISH_PLACES = [
+  "County Kerry", "Dublin", "Cork", "Galway", "Limerick", "Waterford",
+  "Kilkenny", "Sligo", "Athlone", "Drogheda", "Dundalk", "Bray", "Navan",
+  "Ennis", "Tralee", "Killarney", "Wexford", "Letterkenny", "Maynooth",
+  "Naas", "Kerry", "Ireland"
+];
 
 function parseCsv(csvText) {
   const rows = [];
@@ -125,28 +131,38 @@ function isWeatherQuestion(message) {
 
 function cleanLocationCandidate(value) {
   return String(value || "")
-    .replace(/\b(today|tomorrow|now|right now|this morning|this afternoon|this evening|tonight|over the next.*|for my.*|with my.*|for a.*|with a.*|please)\b.*$/i, "")
+    .replace(/\b(today|tomorrow|now|right now|this morning|this afternoon|this evening|tonight|over the next.*|over the weekend.*|this weekend.*|at the weekend.*|for my.*|with my.*|for a.*|with a.*|please)\b.*$/i, "")
+    .replace(/\b(dog|dogs|puppy|cat|cats|rabbit|rabbits|bird|birds|pet|pets|animal|animals|walk|walking|run|running|hike|hiking|park|outside|outdoor|long time)\b/gi, " ")
+    .replace(/\s+/g, " ")
     .replace(/[?.!,]+$/g, "")
     .trim();
 }
 
 function extractLocation(message) {
   const text = String(message || "");
-  const prepositionMatch = text.match(/\b(?:in|near|around|at|for)\s+([A-Za-zÀ-ÿ' .-]{2,})/i);
-  if (prepositionMatch) {
-    const candidate = cleanLocationCandidate(prepositionMatch[1]);
+
+  const knownPlace = KNOWN_IRISH_PLACES
+    .sort((a, b) => b.length - a.length)
+    .find((place) => new RegExp(`\\b${place}\\b`, "i").test(text));
+  if (knownPlace) {
+    return knownPlace;
+  }
+
+  const locationPhrasePatterns = [
+    /\b(?:in|near|around|at)\s+([A-Za-zÀ-ÿ' .-]{2,}?)(?=\s+\b(?:today|tomorrow|now|right now|this morning|this afternoon|this evening|tonight|over the weekend|this weekend|at the weekend|with|for|please)\b|[?.!,]|$)/i,
+    /\bweather\s+for\s+([A-Za-zÀ-ÿ' .-]{2,}?)(?=\s+\b(?:today|tomorrow|now|right now|this morning|this afternoon|this evening|tonight|over the weekend|this weekend|at the weekend|with|for|please)\b|[?.!,]|$)/i,
+    /\bforecast\s+for\s+([A-Za-zÀ-ÿ' .-]{2,}?)(?=\s+\b(?:today|tomorrow|now|right now|this morning|this afternoon|this evening|tonight|over the weekend|this weekend|at the weekend|with|for|please)\b|[?.!,]|$)/i
+  ];
+
+  for (const pattern of locationPhrasePatterns) {
+    const match = text.match(pattern);
+    const candidate = cleanLocationCandidate(match?.[1]);
     if (candidate.length >= 2) {
       return candidate;
     }
   }
 
-  const knownPlaces = [
-    "Dublin", "Cork", "Galway", "Limerick", "Waterford", "Kilkenny", "Sligo",
-    "Athlone", "Drogheda", "Dundalk", "Bray", "Navan", "Ennis", "Tralee",
-    "Killarney", "Wexford", "Letterkenny", "Maynooth", "Naas", "Ireland"
-  ];
-
-  return knownPlaces.find((place) => new RegExp(`\\b${place}\\b`, "i").test(text)) || "";
+  return "";
 }
 
 async function geocodeLocation(location) {
@@ -241,6 +257,11 @@ async function loadWeather(location) {
   return {
     source: "Open-Meteo",
     forecastLimitDays: WEATHER_FORECAST_DAYS,
+    resolvedLocationLabel: [
+      geocoded.name,
+      geocoded.admin1,
+      geocoded.country
+    ].filter(Boolean).join(", "),
     location: geocoded,
     units: {
       temperature: weather.current_units?.temperature_2m,
@@ -286,6 +307,8 @@ async function askGemini({ message, services, holidays, weather }) {
     "If the user asks whether the clinic is open on a date that matches an Irish public holiday, clearly say routine services are closed for that holiday and emergency care remains 24/7.",
     "If the user asks about a date that is not in the supplied Irish public holiday list, do not call it a public holiday.",
     "For weather-related animal engagement questions, use the live weather data only. Give practical, cautious suggestions such as shorter walks, cooler times of day, indoor enrichment, hydration, shade, avoiding hot pavement, avoiding high winds, or delaying outdoor activity during heavy rain or storms.",
+    "For dog-walking suitability, consider temperature, apparent temperature, rain or precipitation probability, wind speed and gusts, UV index, and the requested time period.",
+    "If the user says tomorrow, use the daily forecast entry that corresponds to tomorrow. If they say today or right now, use current weather and today's forecast. State the location and day being assessed.",
     "Weather forecasts are limited to today plus the next 3 days. If the user asks beyond that range, say you can only check up to 3 days ahead.",
     "If no weather data is supplied, do not answer weather questions; ask the user for a location.",
     "If the user asks about anything outside the sheet, holiday lookup, or weather lookup, politely say you can only help with Meadow Vet Care service information, Irish public holiday closure checks, and weather-based pet engagement guidance from live data.",
