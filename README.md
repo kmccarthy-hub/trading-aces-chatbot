@@ -1,40 +1,45 @@
-# Trading Aces AI Help Centre
+# Meadow Vet Care AI Assistant
 
-This is a chatbot webpage for Trading Aces. The GitHub Pages frontend calls the Vercel API route, which reads the live Google Sheet and uses Gemini to answer questions about in-stock cards.
+This is a GitHub Pages submission site for Meadow Vet Care. The visible webpage is hosted on GitHub Pages and calls a Vercel API route, which keeps the Gemini API key private.
 
-## Files
+The AI assistant reads the live Meadow Vet Care Google Sheet and answers only from the clinic services data in the sheet.
 
-- `index.html` - webpage structure
-- `styles.css` - sports-themed styling
-- `script.js` - browser chat behaviour
-- `api/chat.js` - Vercel serverless Gemini endpoint
+## Live URLs
 
-## GitHub Pages
-
-Live site:
+GitHub Pages submission URL:
 
 ```text
-https://kmccarthy-hub.github.io/trading-aces-chatbot/
+https://kmccarthy-hub.github.io/meadow-vet-care/
 ```
 
-The GitHub Pages site calls this private Gemini backend:
+Private Gemini backend:
 
 ```text
 https://trading-aces-chatbot.vercel.app/api/chat
 ```
 
-## Vercel environment variables
+## Sheet
 
-Add this in Vercel before deploying:
+```text
+https://docs.google.com/spreadsheets/d/1JhSODtviGHzXru6Eb5MhfXfVIF5vtJk3pclzzv7j2l4/edit?usp=sharing
+```
+
+Tab name:
+
+```text
+Untitled
+```
+
+## Files
+
+- `index.html` - webpage structure
+- `styles.css` - Meadow Vet Care styling
+- `script.js` - browser chat behaviour
+- `api/chat.js` - Vercel serverless Gemini endpoint
+
+## Vercel Environment Variables
 
 ```text
 GEMINI_API_KEY=your_google_gemini_api_key
+GEMINI_MODEL=gemini-2.5-flash
 ```
-
-Optional:
-
-```text
-GEMINI_MODEL=gemini-3.5-flash
-```
-
-The Google Sheet must stay viewable by anyone with the link, and the inventory tab must be named `Sheet1`.
