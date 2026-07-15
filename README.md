@@ -2,7 +2,7 @@
 
 This is a GitHub Pages submission site for Meadow Vet Care. The visible webpage is hosted on GitHub Pages and calls a Vercel API route, which keeps the Gemini API key private.
 
-The AI assistant reads the live Meadow Vet Care Google Sheet and answers only from the clinic services data in the sheet.
+The AI assistant reads the live Meadow Vet Care Google Sheet, checks Irish public holidays from a live holiday API, and answers only from those data sources.
 
 ## Live URLs
 
@@ -36,6 +36,16 @@ Untitled
 - `styles.css` - Meadow Vet Care styling
 - `script.js` - browser chat behaviour
 - `api/chat.js` - Vercel serverless Gemini endpoint
+
+## Public Holiday Lookup
+
+The backend checks Irish public holidays through Nager.Date:
+
+```text
+https://date.nager.at/api/v4/Holidays/IE/{year}
+```
+
+Routine services are treated as closed on Irish public holidays. Emergency services remain available 24/7 when listed in the services sheet.
 
 ## Vercel Environment Variables
 
