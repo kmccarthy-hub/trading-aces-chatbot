@@ -10,6 +10,55 @@ const KNOWN_IRISH_PLACES = [
   "Ennis", "Tralee", "Killarney", "Wexford", "Letterkenny", "Maynooth",
   "Naas", "Kerry", "Ireland"
 ];
+const TRIAGE_GUIDANCE = [
+  {
+    urgency: "Emergency now",
+    signals: ["collapse", "seizure", "difficulty breathing", "bloated abdomen", "major bleeding", "hit by car", "suspected poisoning", "unable to urinate", "repeated unproductive retching"],
+    action: "Contact Meadow Vet Care or an emergency vet immediately. Do not wait for a routine appointment."
+  },
+  {
+    urgency: "Same-day advice or appointment",
+    signals: ["repeated vomiting", "diarrhoea with blood", "not eating", "eye injury", "limping badly", "pain", "wound", "ear pain", "sudden behaviour change"],
+    action: "Ask the clinic for same-day advice or the earliest suitable appointment."
+  },
+  {
+    urgency: "Routine appointment",
+    signals: ["vaccination", "booster", "dental check", "weight check", "skin itch", "mild limp", "nail trim", "senior check", "new pet check"],
+    action: "Book a routine appointment or ask about matching listed services."
+  },
+  {
+    urgency: "Monitor and ask if it changes",
+    signals: ["mild one-off stomach upset", "minor appetite change", "small behaviour change", "general wellness question"],
+    action: "Monitor closely and contact the clinic if symptoms persist, worsen, or you are worried."
+  }
+];
+const VISIT_PREP_AND_AFTERCARE = [
+  {
+    category: "Consultation",
+    before: ["Bring any current medication details.", "Note symptoms, appetite, drinking, toileting, and behaviour changes.", "Use a secure lead or carrier."],
+    after: ["Follow the vet's treatment plan.", "Book any recommended follow-up.", "Contact the clinic if symptoms worsen or new worrying signs appear."]
+  },
+  {
+    category: "Dental",
+    before: ["Ask the clinic whether fasting is needed.", "Mention any medication or previous anaesthetic concerns.", "Bring recent medical notes if available."],
+    after: ["Offer food only as advised by the vet.", "Watch for bleeding, swelling, pain, refusal to eat, or unusual tiredness.", "Use prescribed pain relief or antibiotics exactly as directed."]
+  },
+  {
+    category: "Surgery",
+    before: ["Confirm fasting instructions with the clinic.", "Tell the clinic about medication, allergies, or previous anaesthetic issues.", "Arrange quiet recovery space at home."],
+    after: ["Keep your pet rested and prevent licking or chewing at the wound.", "Check the incision daily for swelling, discharge, bleeding, or opening.", "Contact the clinic urgently for breathing issues, collapse, uncontrolled pain, or heavy bleeding."]
+  },
+  {
+    category: "Emergency",
+    before: ["Call ahead if possible.", "Keep the pet warm, calm, and safely contained.", "Bring medication details and any suspected toxin packaging."],
+    after: ["Follow emergency discharge instructions closely.", "Arrange any recommended recheck.", "Return urgently if your pet deteriorates."]
+  },
+  {
+    category: "Vaccination",
+    before: ["Bring vaccination records if you have them.", "Tell the vet about previous vaccine reactions.", "Use a secure lead or carrier."],
+    after: ["Mild tiredness can happen after vaccination.", "Contact the clinic urgently for facial swelling, breathing problems, repeated vomiting, collapse, or severe weakness."]
+  }
+];
 
 function parseCsv(csvText) {
   const rows = [];
@@ -292,6 +341,22 @@ function compactService(service) {
   };
 }
 
+function buildAppointmentAvailability(services) {
+  return services
+    .filter((service) => Number(service.slots_this_week || 0) > 0)
+    .map((service) => ({
+      service_id: service.service_id,
+      service_name: service.service_name,
+      category: service.category,
+      species: service.species,
+      availability: service.availability,
+      slots_this_week: service.slots_this_week,
+      duration_min: service.duration_min,
+      requires_appointment: service.requires_appointment,
+      price_eur: service.price_eur
+    }));
+}
+
 async function askGemini({ message, services, holidays, weather }) {
   const apiKey = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
   if (!apiKey) {
@@ -299,11 +364,15 @@ async function askGemini({ message, services, holidays, weather }) {
   }
 
   const serviceData = services.map(compactService);
+  const appointmentAvailability = buildAppointmentAvailability(services);
   const systemInstruction = [
     "You are the Meadow Vet Care AI assistant for a modern Irish veterinary clinic.",
-    "Answer only using the live Meadow Vet Care services data, live Irish public holiday data, and live weather data provided in the prompt.",
+    "Answer only using the live Meadow Vet Care services data, live Irish public holiday data, live weather data, appointment availability data, triage guidance, and visit prep/aftercare guidance provided in the prompt.",
     "The clinic serves dogs, cats, rabbits, small mammals, and birds when those services are present in the sheet.",
     "Use only facts that can be derived from the services sheet, Irish public holiday lookup, or weather lookup. Do not invent clinic policies, ordinary opening hours, prices, discounts, availability, medical advice, public holiday dates, or weather conditions.",
+    "For appointment questions, use appointment availability derived from the live services sheet. slots_this_week means available slots this week. If a matching service has 0 slots, say no listed slots are available this week and suggest asking the clinic for alternatives.",
+    "For symptom triage questions, use the triage guidance as urgency guidance only. Do not diagnose. Always recommend emergency contact for emergency-now signals.",
+    "For visit preparation and aftercare questions, use the prep/aftercare guidance and match it to the service category when possible.",
     "Meadow Vet Care is closed for routine services on Irish public holidays. Emergency services remain available 24/7 when the sheet lists emergency services with 24/7 availability.",
     "If the user asks whether the clinic is open on a date that matches an Irish public holiday, clearly say routine services are closed for that holiday and emergency care remains 24/7.",
     "If the user asks about a date that is not in the supplied Irish public holiday list, do not call it a public holiday.",
@@ -321,6 +390,9 @@ async function askGemini({ message, services, holidays, weather }) {
 
   const input = [
     `Live Meadow Vet Care services JSON:\n${JSON.stringify(serviceData)}`,
+    `Live appointment availability derived from the services sheet JSON:\n${JSON.stringify(appointmentAvailability)}`,
+    `Symptom triage guidance JSON:\n${JSON.stringify(TRIAGE_GUIDANCE)}`,
+    `Visit preparation and aftercare guidance JSON:\n${JSON.stringify(VISIT_PREP_AND_AFTERCARE)}`,
     `Live Irish public holidays JSON:\n${JSON.stringify(holidays)}`,
     `Live weather JSON, if requested:\n${JSON.stringify(weather || null)}`,
     `Current date in Ireland: ${new Intl.DateTimeFormat("en-IE", { timeZone: "Europe/Dublin", dateStyle: "full" }).format(new Date())}`,
